@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  test_db:
+    container_name: test_db
+    image: mariadb:10.4.28
+    ports:
+      - "3306:3306"
+    environment:
+      - MARIADB_ROOT_PASSWORD=test
+      - MARIADB_USER=test
+      - MARIADB_PASSWORD=test
+      - MARIADB_DATABASE=test
+    networks:
+      - net-database
+    healthcheck:
+      test: ["CMD","/usr/bin/mariadb","--user=test","--password=test","test"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+  api:
+    container_name: test_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8787:8787"
+    networks:
+      - net-database
+    depends_on:
+      test_db:
+        condition: service_healthy
+networks:
+  net-database:
+    name: net-database
+    driver: bridge
